@@ -1,5 +1,7 @@
 import os
 import csv
+import random
+
 
 movielens_dataset_path = "/media/asm/facf0468-acee-415a-8560-384805510931/tmp/dataset/RecSys/movielens-1m"
 age_range_dict = {
@@ -12,35 +14,46 @@ age_range_dict = {
     '56': '56+'
 }
 age_range_list = age_range_dict.keys()
+age_range_to_idx = dict(zip(age_range_list, range(len(age_range_list))))
 
 occupation_dict = {
-    '0':  "other",
-    '1':  "academic/educator",
-    '2':  "artist",
-    '3':  "clerical/admin",
-    '4':  "college/grad student",
-    '5':  "customer service",
-    '6':  "doctor/health care",
-    '7':  "executive/managerial",
-    '8':  "farmer",
-    '9':  "homemaker",
-    '10':  "K-12 student",
-    '11':  "lawyer",
-    '12':  "programmer",
-    '13':  "retired",
-    '14':  "sales/marketing",
-    '15':  "scientist",
-    '16':  "self-employed",
-    '17':  "technician/engineer",
-    '18':  "tradesman/craftsman",
-    '19':  "unemployed",
-    '20':  "writer"
+    '0': "other",
+    '1': "academic/educator",
+    '2': "artist",
+    '3': "clerical/admin",
+    '4': "college/grad student",
+    '5': "customer service",
+    '6': "doctor/health care",
+    '7': "executive/managerial",
+    '8': "farmer",
+    '9': "homemaker",
+    '10': "K-12 student",
+    '11': "lawyer",
+    '12': "programmer",
+    '13': "retired",
+    '14': "sales/marketing",
+    '15': "scientist",
+    '16': "self-employed",
+    '17': "technician/engineer",
+    '18': "tradesman/craftsman",
+    '19': "unemployed",
+    '20': "writer"
 }
 occupation_list = occupation_dict.keys()
+occupation_to_idx = dict(zip(occupation_list, range(len(occupation_list))))
+
 tags_list = ['Action', 'Adventure', 'Animation', "Children's", 'Comedy',
              'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir',
              'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi',
              'Thriller', 'War', 'Western']
+tags_to_idx = dict(zip(tags_list, range(len(tags_list))))
+
+
+def create_one_array(index, max_length):
+    b = np.zeros((1, max_length))
+    b[index] = 1
+    return b
+
 
 class MovielensReader():
     def __init__(self, dataset_path, test_data_ratio=0.2):
@@ -60,7 +73,7 @@ class MovielensReader():
                 released_date = title.split()[-1][1:-1]
                 self.movies[movie_id] = {
                                 'title': title, 
-                                'tags':tags.split("|"), 
+                                'tags': tags.split("|"), 
                                 'released_date': released_date}
 
     def _ratings():
@@ -74,13 +87,27 @@ class MovielensReader():
                                    'rating': float(rating)/5., 
                                    'timestamp': int(timestamp)}
             num_of_ratings = len(self.ratings.keys())
-            test_len = num_of_ratings * 
-
+            ratings_id = set(self.ratings.keys())
+            test_len = num_of_ratings * self.split_test
+            self.rating_test = random.sample(ratings_id, test_len)
+            self.rating_train = list(ratings_id.different(set(self.rating_test)))
         pass
 
     def _users():
+        users_dat = os.path.join(dataset_path, 'users.dat')
+        with open(users_dat) as f:
+            i = 0
+            for l in f:
+                user_id, gender, age, occupation, zipcode = l.split("::")
+                self.users[user_id] = {
+                        "gender": gender, 
+                        "age": age,
+                        "occupation": occupation,
+                        "zipcode": zipcode}
         pass
 
-    def graph_build():
-        pass
+
+# build tinkerpop graph for query k-hop
+def graph_build():
+    pass
 
